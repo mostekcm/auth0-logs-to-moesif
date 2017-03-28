@@ -19,7 +19,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/auth0/auth0-logs-to-moesif.git"
+    "url": "git+https://github.com/auth0-extensions/auth0-logs-to-moesif.git"
   },
   "author": "richard.seldon@auth0.com",
   "license": "MIT",
