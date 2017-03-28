@@ -1,7 +1,6 @@
 /**
  * Created by Xingheng on 8/17/16.
  */
-const async = require('async');
 
 function buildParams(prefix, obj, add) {
   var name, i, l, rbracket;
@@ -45,12 +44,4 @@ module.exports.objectToQueryString = function(a) {
   }
   output = s.join('&').replace(r20, '+');
   return output;
-};
-
-module.exports.getNewUsers = function(client, logs, callback) {
-  async.eachLimit(logs, 10, (log, next) =>
-      client.users.get({ id: log.user_id })
-        .then(() => next())
-        .catch(() => next()),
-    callback);
 };

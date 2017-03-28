@@ -2,7 +2,6 @@ const loggingTools = require('auth0-log-extension-tools');
 const config = require('../lib/config');
 const logger = require('../lib/logger');
 const postEventsToMoesif = require('../lib/moesif');
-const getNewUsers = require('../lib/helpers').getNewUsers;
 
 module.exports = (storage) =>
   (req, res, next) => {
@@ -14,7 +13,7 @@ module.exports = (storage) =>
       if (!logs || !logs.length) {
         return callback();
       }
-      console.log('got ' + logs.length + ' logs');
+
       return postEventsToMoesif(config('AUTH0_DOMAIN'), config('MOESIF_APPLICATION_ID'), logs)
         .end((err) => {
           if (err) {
@@ -23,12 +22,6 @@ module.exports = (storage) =>
           }
 
           logger.info(`${logs.length} events successfully sent to Moesif`);
-
-          const signups = logs.filter(log => log.type === 'ss');
-
-          if (signups.length) {
-            return getNewUsers(req.auth0, signups, callback);
-          }
 
           return callback();
         });
@@ -42,7 +35,7 @@ module.exports = (storage) =>
       clientSecret: config('AUTH0_CLIENT_SECRET'),
       batchSize: config('BATCH_SIZE'),
       startFrom: config('START_FROM'),
-      logTypes: [ 'sapi', 'fapi', 'ss' ],
+      logTypes: [ 'sapi', 'fapi' ],
       onLogsReceived: onLogsReceived,
       onSuccess: (config('SLACK_SEND_SUCCESS')) ? slack.send : null,
       onError: slack.send
