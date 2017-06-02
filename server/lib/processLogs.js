@@ -5,7 +5,11 @@ const postEventsToMoesif = require('../lib/moesif');
 
 module.exports = (storage) =>
   (req, res, next) => {
-    if (!req.body || !req.body.schedule || req.body.state !== 'active') {
+    const wtBody = (req.webtaskContext && req.webtaskContext.body) || req.body || {};
+    const wtHead = (req.webtaskContext && req.webtaskContext.headers) || {};
+    const isCron = (wtBody.schedule && wtBody.state === 'active') || (wtHead.referer === 'https://manage.auth0.com/' && wtHead['if-none-match']);
+
+    if (!isCron) {
       return next();
     }
 
@@ -27,7 +31,10 @@ module.exports = (storage) =>
         });
     };
 
-    const slack = new loggingTools.SlackReporter({ hook: config('SLACK_INCOMING_WEBHOOK_URL'), username: 'auth0-logs-to-moesif', title: 'Logs To Moesif' });
+    const slack = new loggingTools.reporters.SlackReporter({
+      hook: config('SLACK_INCOMING_WEBHOOK_URL'),
+      username: 'auth0-logs-to-moesif',
+      title: 'Logs To Moesif' });
 
     const options = {
       domain: config('AUTH0_DOMAIN'),
@@ -35,13 +42,19 @@ module.exports = (storage) =>
       clientSecret: config('AUTH0_CLIENT_SECRET'),
       batchSize: config('BATCH_SIZE'),
       startFrom: config('START_FROM'),
-      logTypes: [ 'sapi', 'fapi' ],
-      onLogsReceived: onLogsReceived,
-      onSuccess: (config('SLACK_SEND_SUCCESS')) ? slack.send : null,
-      onError: slack.send
+      logTypes: [ 'sapi', 'fapi' ]
     };
 
-    const auth0logger = loggingTools.Auth0Logger(storage, options);
+    const auth0logger = new loggingTools.LogsProcessor(storage, options);
 
-    return auth0logger(req, res, next);
+    return auth0logger
+      .run(onLogsReceived)
+      .then(result => {
+        slack.send(result.status, result.checkpoint);
+        res.json(result);
+      })
+      .catch(err => {
+        slack.send({ error: err, logsProcessed: 0 }, null);
+        next(err);
+      });
   };

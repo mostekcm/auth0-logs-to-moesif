@@ -4,6 +4,6 @@ const expressApp = require('./server');
 const logger = require('./server/lib/logger');
 
 module.exports = tools.createServer((config, storage) => {
-  logger.info('Starting Logs To Moesif - Version:', process.env.CLIENT_VERSION);
+  logger.info('Starting Logs to Moesif extension - Version:', process.env.CLIENT_VERSION);
   return expressApp(config, storage);
 });
