@@ -1,0 +1,51 @@
+{
+  "title": "Auth0 Logs to Moesif",
+  "name": "auth0-logs-to-moesif",
+  "version": "0.1.0",
+  "author": "auth0",
+  "description": "This extension will take all of your Auth0 logs and export them to Moesif",
+  "type": "cron",
+  "initialUrlPath": "/login",
+  "repository": "https://github.com/auth0/auth0-logs-to-moesif",
+  "keywords": [
+    "auth0",
+    "extension"
+  ],
+  "schedule": "0 */5 * * * *",
+  "auth0": {
+    "createClient": true,
+    "onUninstallPath": "/.extensions/on-uninstall",
+    "scopes": "read:logs read:users delete:clients"
+  },
+  "secrets": {
+    "MOESIF_APPLICATION_ID": {
+      "description": "Moesif Application Id",
+      "required": true
+    },
+    "BATCH_SIZE": {
+      "description": "The amount of logs to be read on each execution. Maximum is 100.",
+      "default": 100
+    },
+    "START_FROM": {
+      "description": "CheckpointId of log to start with."
+    },
+    "SLACK_INCOMING_WEBHOOK_URL": {
+      "description": "Slack webhook"
+    },
+    "SLACK_SEND_SUCCESS": {
+      "description": "Send success messages to slack?",
+      "type": "select",
+      "allowMultiple": true,
+      "options": [
+        {
+          "value": "No",
+          "text": ""
+        },
+        {
+          "value": "Yes",
+          "text": "true"
+        }
+      ]
+    }
+  }
+}
